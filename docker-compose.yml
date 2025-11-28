@@ -1,22 +1,15 @@
-version: '3.8'
-
 services:
   postgres:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: api_summarization_postgres
+    image: postgres:16-alpine
+    container_name: api_summarization_db
     environment:
-      POSTGRES_USER: api_user
-      POSTGRES_PASSWORD: api_password
+      POSTGRES_USER: default
+      POSTGRES_PASSWORD: summarization_pass
       POSTGRES_DB: api_summarization
-      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Uncomment to mount init scripts
-      # - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - api_network
     healthcheck:
@@ -25,26 +18,30 @@ services:
       timeout: 5s
       retries: 5
 
-  # Uncomment to add your FastAPI application
+  # FastAPI Service (commented out)
   # api:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
   #   container_name: api_summarization_app
-  #   environment:
-  #     DATABASE_URL: postgresql://api_user:api_password@postgres:5432/api_summarization
   #   ports:
   #     - "8000:8000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://api_user:api_password@postgres:5432/api_summarization
+  #     - PYTHONUNBUFFERED=1
+  #   volumes:
+  #     - ./app:/app/app
   #   depends_on:
   #     postgres:
   #       condition: service_healthy
   #   networks:
   #     - api_network
-
-volumes:
-  postgres_data:
+  #   command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 networks:
   api_network:
     driver: bridge
+
+volumes:
+  postgres_data:
 

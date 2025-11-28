@@ -1,10 +1,9 @@
-import requests
+import requests as http_requests
 
 
 class RequestService:
-    @staticmethod
-    def get_requests(url, json_response=True, params=None) -> str:
-        response = requests.get(url, params=params)
+    async def get_requests(self, url, json_response=True, params=None) -> str:
+        response = http_requests.get(url, params=params)
         if not json_response:
             return response.content
 
@@ -12,5 +11,5 @@ class RequestService:
 
     @staticmethod
     def post_request(url, data):
-        response = requests.post(url, json=data)
+        response = http_requests.post(url, json=data)
         return response.json()

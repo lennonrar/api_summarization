@@ -4,7 +4,7 @@ from pydantic import BaseModel, HttpUrl, field_validator
 
 class CreateSummaryRequest(BaseModel):
     url: HttpUrl
-    words: int
+    words_limit: int
 
     @field_validator('url')
     @classmethod

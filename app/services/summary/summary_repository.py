@@ -1,10 +1,30 @@
 from abc import ABC, abstractmethod
+from sqlalchemy.orm import Session
+
+from app.models.summary import Summary
+
 
 class SummaryRepositoryInterface(ABC):
     @abstractmethod
-    def get_summary_by_url(self, url: int) -> dict:
+    def get_summary_by_id(self, summary_id: str) -> dict | None:
         pass
 
     @abstractmethod
-    def create_summary(self, user_id: int, url: str, summary: str) -> dict:
+    def create_summary(self, summary_id: str, url: str, summary: str) -> dict:
         pass
+
+class SummaryRepository(SummaryRepositoryInterface):
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_summary_by_id(self, summary_id: str) -> dict | None:
+        result = self.db.query(Summary).filter(Summary.id == summary_id).first()
+        return result
+
+
+    def create_summary(self, summary_id: str, url: str, summary: str) -> dict:
+        db_summary = Summary(id=summary_id, url=url, summary=summary)
+        self.db.add(db_summary)
+        self.db.commit()
+        self.db.refresh(db_summary)
+        return db_summary
