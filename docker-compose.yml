@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_summarization_postgres
+    environment:
+      POSTGRES_USER: api_user
+      POSTGRES_PASSWORD: api_password
+      POSTGRES_DB: api_summarization
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Uncomment to mount init scripts
+      # - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - api_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U api_user -d api_summarization"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Uncomment to add your FastAPI application
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: api_summarization_app
+  #   environment:
+  #     DATABASE_URL: postgresql://api_user:api_password@postgres:5432/api_summarization
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - api_network
+
+volumes:
+  postgres_data:
+
+networks:
+  api_network:
+    driver: bridge
+
