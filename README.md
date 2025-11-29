@@ -1,157 +1,156 @@
-# Docker PostgreSQL Setup
+# API Summarization
 
-This project includes Docker configuration for running PostgreSQL.
+API for generating summaries from Wikipedia articles using LLMs.
 
 ## Quick Start
 
-### Using Docker Compose (Recommended)
-
-1. Start PostgreSQL:
-```bash
-docker-compose up -d postgres
-```
-
-2. Check if PostgreSQL is running:
-```bash
-docker-compose ps
-```
-
-3. View logs:
-```bash
-docker-compose logs -f postgres
-```
-
-4. Stop PostgreSQL:
-```bash
-docker-compose down
-```
-
-5. Stop and remove volumes (deletes all data):
-```bash
-docker-compose down -v
-```
-
-### Using Docker Directly
-
-1. Build the image:
-```bash
-docker build -f Dockerfile -t api_summarization_postgres .
-```
-
-2. Run the container:
-```bash
-docker run -d \
-  --name api_summarization_postgres \
-  -e POSTGRES_USER=api_user \
-  -e POSTGRES_PASSWORD=api_password \
-  -e POSTGRES_DB=api_summarization \
-  -p 5432:5432 \
-  -v postgres_data:/var/lib/postgresql/data \
-  api_summarization_postgres
-```
-
-3. Stop the container:
-```bash
-docker stop api_summarization_postgres
-```
-
-4. Remove the container:
-```bash
-docker rm api_summarization_postgres
-```
-
-## Connecting to PostgreSQL
-
-### From Host Machine
-
-```bash
-psql -h localhost -p 5432 -U api_user -d api_summarization
-```
-
-Password: `api_password`
-
-### From Python/SQLAlchemy
-
-```python
-from sqlalchemy import create_engine
-
-DATABASE_URL = "postgresql://api_user:api_password@localhost:5432/api_summarization"
-engine = create_engine(DATABASE_URL)
-```
-
-### From Docker Container
-
-```bash
-docker exec -it api_summarization_postgres psql -U api_user -d api_summarization
-```
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and adjust values as needed:
+### 1. Setup Environment
 
 ```bash
 cp .env.example .env
+# Edit .env and add your HF_TOKEN
 ```
 
-## Database Initialization Scripts
+### 2. Run with Docker Compose
 
-To run SQL scripts on database initialization, create an `init-scripts` directory and place your `.sql` or `.sh` files there. Then uncomment the relevant lines in `Dockerfile.postgres` and `docker-compose.yml`.
-
-Example:
 ```bash
-mkdir init-scripts
-echo "CREATE TABLE example (id SERIAL PRIMARY KEY, name VARCHAR(100));" > init-scripts/01-init.sql
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f api
+
+# Stop services
+docker-compose down
 ```
 
-## Data Persistence
+The API will be available at:
+- http://localhost:8000
+- http://localhost:8000/docs (Swagger UI)
 
-Database data is persisted in a Docker volume named `postgres_data`. This means your data will survive container restarts.
+### 3. Run Locally (without Docker)
 
-To backup your data:
 ```bash
-docker exec -t api_summarization_postgres pg_dump -U api_user api_summarization > backup.sql
-```
+# Install dependencies
+poetry install
 
-To restore from backup:
-```bash
-docker exec -i api_summarization_postgres psql -U api_user -d api_summarization < backup.sql
-```
-
-## Configuration
-
-Default configuration:
-- **User**: api_user
-- **Password**: api_password
-- **Database**: api_summarization
-- **Port**: 5432
-- **Version**: PostgreSQL 16 (Alpine)
-
-To change these values, edit the environment variables in `docker-compose.yml` or `Dockerfile.postgres`.
-
-## Troubleshooting
-
-### Port already in use
-
-If port 5432 is already in use, change the port mapping in `docker-compose.yml`:
-```yaml
-ports:
-  - "5433:5432"  # Host:Container
-```
-
-Then connect using port 5433 on your host machine.
-
-### Permission denied
-
-If you encounter permission issues with volumes, ensure Docker has proper permissions or try:
-```bash
-docker-compose down -v
+# Start database (Docker)
 docker-compose up -d postgres
+
+# Run migrations
+poetry run alembic upgrade head
+
+# Start API
+poetry run uvicorn app.main:app --reload
 ```
 
-### Health check failing
+## Running Tests
 
-Wait a few seconds for PostgreSQL to fully start. You can check the health status:
+### All Tests (32 tests)
+
 ```bash
-docker inspect api_summarization_postgres | grep -A 10 Health
+# Local
+pytest tests/ -v
+
+# Docker
+docker-compose exec api pytest tests/ -v
+```
+
+### Tests
+
+```bash
+# Local
+pytest tests/ -v
+
+# Docker
+docker-compose exec api pytest tests/test_*.py -v
+```
+
+## API Endpoints
+
+### Health Check
+```bash
+curl http://localhost:8000/healthcheck
+```
+
+### Get Summary
+```bash
+curl "http://localhost:8000/api/v1/summary/?url2search=https://en.wikipedia.org/wiki/Python_(programming_language)"
+```
+
+### Create Summary
+```bash
+curl -X POST http://localhost:8000/api/v1/summary/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+    "words_limit": 150
+  }'
+```
+
+## Docker Commands
+
+```bash
+# Start services
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# Rebuild
+docker-compose build --no-cache
+
+# View logs
+docker-compose logs -f api
+docker-compose logs -f postgres
+
+# Run migrations
+docker-compose exec api alembic upgrade head
+
+# Access database
+docker-compose exec postgres psql -U default -d api_summarization
+
+# Shell into API container
+docker-compose exec api bash
+```
+
+## Database
+
+**Connection Info:**
+- Host: localhost
+- Port: 5432
+- User: default
+- Password: summarization_pass
+- Database: api_summarization
+
+**Connection String:**
+```
+postgresql://default:summarization_pass@localhost:5432/api_summarization
+```
+
+## Requirements
+
+- Python 3.11+
+- Docker & Docker Compose
+- Poetry (for local development)
+- HuggingFace API Token
+
+## Project Structure
+
+```
+.
+├── app/
+│   ├── main.py           # FastAPI application
+│   ├── routes/           # API routes
+│   ├── services/         # Business logic
+│   ├── models/           # Database models
+│   └── dto/              # Request/Response models
+├── tests/
+│   ├── test_*.py         # Router tests
+│   └── services/         # Service tests
+├── alembic/              # Database migrations
+├── docker-compose.yml    # Docker configuration
+├── Dockerfile            # API container
+└── pyproject.toml        # Dependencies
 ```
 

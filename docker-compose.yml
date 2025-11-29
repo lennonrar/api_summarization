@@ -13,30 +13,33 @@ services:
     networks:
       - api_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U api_user -d api_summarization"]
+      test: ["CMD-SHELL", "pg_isready -U default -d api_summarization"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # FastAPI Service (commented out)
-  # api:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: api_summarization_app
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     - DATABASE_URL=postgresql://api_user:api_password@postgres:5432/api_summarization
-  #     - PYTHONUNBUFFERED=1
-  #   volumes:
-  #     - ./app:/app/app
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   networks:
-  #     - api_network
-  #   command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_summarization_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://default:summarization_pass@postgres:5432/api_summarization
+      - PYTHONUNBUFFERED=1
+      - LLM_PROVIDER=huggingface
+      - HF_TOKEN=${HF_TOKEN}
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - api_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 networks:
   api_network:

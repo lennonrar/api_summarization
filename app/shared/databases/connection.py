@@ -2,12 +2,10 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
-from app.db import Base
 
 # Database configuration from environment variables
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://default:summarization_pass@localhost:5432/api_summarization"
 )
 
 # Create SQLAlchemy engine
@@ -43,13 +41,3 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
-
-def init_db() -> None:
-    """
-    Initialize database tables.
-    This should be called on application startup.
-    """
-    pass
-    # Base.metadata.create_all(bind=engine)
-
