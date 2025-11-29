@@ -143,3 +143,18 @@ API_PORT=8000
 - Poetry (for local development)
 - HuggingFace API Token
 
+```
+## HuggingFace Integration
+
+This project uses HuggingFace's Inference API for text summarization.
+
+### Getting Your HF Token
+
+1. **Create Account**: Sign up at [huggingface.co](https://huggingface.co)
+2. **Generate Token**:
+   - Go to Settings → [Access Tokens](https://huggingface.co/settings/tokens)
+   - Click "New token"
+   - Give it a name (e.g., "API Summarization")
+   - Select "Read" access
+   - Click "Generate"
+3. **Copy Token**: Add it to your `.env` file as `HF_TOKEN`
