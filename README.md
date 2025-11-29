@@ -56,16 +56,6 @@ pytest tests/ -v
 docker-compose exec api pytest tests/ -v
 ```
 
-### Tests
-
-```bash
-# Local
-pytest tests/ -v
-
-# Docker
-docker-compose exec api pytest tests/test_*.py -v
-```
-
 ## API Endpoints
 
 ### Health Check
@@ -152,23 +142,4 @@ API_PORT=8000
 - Docker & Docker Compose
 - Poetry (for local development)
 - HuggingFace API Token
-
-## Project Structure
-
-```
-.
-├── app/
-│   ├── main.py           # FastAPI application
-│   ├── routes/           # API routes
-│   ├── services/         # Business logic
-│   ├── models/           # Database models
-│   └── dto/              # Request/Response models
-├── tests/
-│   ├── test_*.py         # Router tests
-│   └── services/         # Service tests
-├── alembic/              # Database migrations
-├── docker-compose.yml    # Docker configuration
-├── Dockerfile            # API container
-└── pyproject.toml        # Dependencies
-```
 
