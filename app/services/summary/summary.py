@@ -7,6 +7,7 @@ from app.services.language_models.language_models import LanguageModelsService
 
 
 class SummaryService:
+    """Service to manage summaries for URLs."""
     def __init__(
             self,
             summary_repository:  SummaryRepositoryInterface,

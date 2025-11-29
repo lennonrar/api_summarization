@@ -2,7 +2,7 @@ import requests as http_requests
 
 
 class RequestService:
-
+    """Service for making HTTP requests."""
     def __init__(self):
         self.default_headers = {"User-Agent": 'api_summarization_test'}
         self.respect_robots = True

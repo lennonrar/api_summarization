@@ -15,6 +15,7 @@ class LLMProvider(Enum):
 
 
 class LanguageModelsService:
+    """Service to interact with different LLM providers for text summarization."""
     def __init__(self):
         provider = os.getenv("LLM_PROVIDER", "huggingface").lower()
         self.provider = LLMProvider(provider)

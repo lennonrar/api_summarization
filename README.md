@@ -128,6 +128,24 @@ docker-compose exec api bash
 postgresql://default:summarization_pass@localhost:5432/api_summarization
 ```
 
+## Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```env
+# Hugging Face API Token (required for LLM summarization)
+HF_TOKEN=your_huggingface_token_here
+
+# Database Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=summarization_db
+DATABASE_URL=postgresql://postgres:postgres@db:5432/summarization_db
+
+# API Configuration
+API_PORT=8000
+
+
 ## Requirements
 
 - Python 3.11+
